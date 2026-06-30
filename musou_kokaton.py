@@ -217,6 +217,7 @@ class Explosion(pg.sprite.Sprite):
             self.kill()
 
 
+
 class Enemy(pg.sprite.Sprite):
     """
     敵機に関するクラス
