@@ -294,6 +294,23 @@ class EMP:
         time.sleep(0.05)
 
 
+class Gravity(pg.sprite.Sprite):
+    """
+    重力場に関するクラス
+    """
+    def __init__(self,life:int):
+        super().__init__()
+        self.image = pg.Surface((WIDTH,HEIGHT))
+        pg.draw.rect(self.image,(0,0,0),(0,0,WIDTH,HEIGHT))
+        self.image.set_alpha(128)
+        self.rect=self.image.get_rect()
+        self.life = life
+
+    def update(self):
+        self.life-=1
+        if(self.life<0):
+            self.kill()
+
 def main():
     pg.display.set_caption("真！こうかとん無双")
     screen = pg.display.set_mode((WIDTH, HEIGHT))
@@ -307,6 +324,8 @@ def main():
     emys = pg.sprite.Group()
     shields = pg.sprite.Group()  # 追加点
     active_emp=None
+    gravitys=pg.sprite.Group()
+
 
     tmr = 0
     clock = pg.time.Clock()
@@ -327,6 +346,9 @@ def main():
                 if score.value>20:
                     score.value-=20
                     active_emp=EMP(emys,bombs,screen)
+            if event.type == pg.KEYDOWN and event.key == pg.K_RETURN and score.value>200:
+                score.value -= 200
+                gravitys.add(Gravity(400))
         screen.blit(bg_img, [0, 0])
 
         if tmr%200 == 0:  # 200フレームに1回，敵機を出現させる
@@ -341,6 +363,9 @@ def main():
             exps.add(Explosion(emy, 100))  # 爆発エフェクト
             score.value += 10 # 10点アップ
             bird.change_img(6, screen)  # こうかとん喜びエフェクト
+
+        for emy in pg.sprite.groupcollide(emys,gravitys,True,False).keys():
+            exps.add(Explosion(emy,100))
 
         for bomb in pg.sprite.groupcollide(bombs, beams, True, True).keys():  # ビームと衝突した爆弾リスト
             exps.add(Explosion(bomb, 50))  # 爆発エフェクト
@@ -373,6 +398,8 @@ def main():
         shields.update()
         shields.draw(screen)
         # ==========↑追加点↑==========
+        gravitys.update()
+        gravitys.draw(screen)
         score.update(screen)
         pg.display.update()
         tmr += 1
